@@ -1,4 +1,4 @@
-# ~> Pinch <~
+# Pinch
 
 Pinch is a simple language based solely on dataflow that is represented by arrows. This repository will be an interpreter written in C that interpretes Pinch.
 
