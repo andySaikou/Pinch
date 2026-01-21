@@ -49,7 +49,7 @@ struct pinch_var {
 
 enum statement_type {
     PINCH_VAR,
-    PINCH_FUNC,
+    PINCH_FUNC_S,  // Avoid name collision with factor_type PINCH_FUNC
     FACTOR
 };
 

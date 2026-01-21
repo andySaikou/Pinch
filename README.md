@@ -21,10 +21,10 @@ result  #output: 5
 
 Using the BNF syntax:
 
-* `(x-y)` stands for ‘range’, meaning any value from `x` to `y` inclusive;
-* `(x)?` stands for ‘optional’, meaning that `x` can occur zero or one times;
-* `(x)+` stands for ‘repeatable’, meaning that `x` can occur one or more times;
-* `(x)*` stands for ‘optional and repeatable’, meaning that `x` can occur zero or more times.
+- `(x-y)` stands for ‘range’, meaning any value from `x` to `y` inclusive;
+- `(x)?` stands for ‘optional’, meaning that `x` can occur zero or one times;
+- `(x)+` stands for ‘repeatable’, meaning that `x` can occur one or more times;
+- `(x)*` stands for ‘optional and repeatable’, meaning that `x` can occur zero or more times.
 
 ```
 <small_letter> ::= ('a'-'z')
@@ -55,4 +55,7 @@ Using the BNF syntax:
 ## Semantics
 - Pinch has two data types: number and text. When operating with numbers, they behave like double with some degree of rounding applied to the output.
 - Pre-defined functions have expected number of arguements of some expected types. Feeding a function with incorrect arguements will produce error.
-- Although it is syntactically correct to direct more than one factor at a variable at a time (using the '[a,b,...]' closure defined in factors), this does not comply with the semantics and will cause error.
+- Although it is syntactically correct to direct more than one factor at a variable at a time (using the `[a,b,...]` closure defined in `factors`), this does not comply with the semantics and will cause error.
+
+## Interpreter Constraints
+- Any `var_name` and `func_name` can be at most 50 characters long.
