@@ -29,9 +29,10 @@ Using the BNF syntax:
 ```
 <small_letter> ::= ('a'-'z')
 <big_letter> ::= ('A'-'Z')
-<str_literal> ::= ( <ASCII char excluding '"'> )+
+<char> ::= any ASCII char excluding '"'
 <digit> ::= ('0'-'9')
-<num_literal> ::= <digit>+
+<num_literal> ::= ('-')? <digit>+ ('.' <digit>+)?
+<str_literal> ::= <char>* 
 
 <var_name> ::= <small_letter> (<small_letter> | '_')*
 <func_name> ::= <big_letter> (<big_letter> | '_')*
@@ -54,8 +55,8 @@ Using the BNF syntax:
 
 ## Semantics
 - Pinch has two data types: number and text. When operating with numbers, they behave like double with some degree of rounding applied to the output.
-- Pre-defined functions have expected number of arguements of some expected types. Feeding a function with incorrect arguements will produce error.
+- Pre-defined functions have expected number of arguements of expected types. Feeding a function with incorrect arguements will produce error.
 - Although it is syntactically correct to direct more than one factor at a variable at a time (using the `[a,b,...]` closure defined in `factors`), this does not comply with the semantics and will cause error.
 
 ## Interpreter Constraints
-- Any `var_name` and `func_name` can be at most 50 characters long.
+- Any `var_name`, `func_name`, `num_literal` or `str_literal` can be at most 50 characters long.
