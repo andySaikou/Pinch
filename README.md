@@ -4,7 +4,7 @@ Pinch is a simple language based solely on dataflow that is represented by arrow
 
 ## Example program
 
-The following program calculates the hypotenuse of a right triangle.
+Calculate the hypotenuse of a right triangle:
 ```
 a <- 3
 b <- 4
@@ -15,6 +15,39 @@ b <- 4
 (sum -> SQRT) -> result
 
 result  #output: 5
+```
+
+Generate the first 10 numbers of the Fibonacci sequence:
+```
+0 -> a
+1 -> b
+10 -> count
+
+a   #output 0, 1, 1, 2...
+(a -> ADD <- b) -> next
+
+b -> a
+next -> b
+(count -> SUB <- 1) -> count
+
+(count -> GT <- 0) -> check
+[check, 6<=, =>1] -> JUMP_IF
+```
+
+Take a input string, check for a specific keyword, and output a status message:
+```
+"Pinch Language" -> raw_input
+raw_input -> UPPER -> upper_input
+
+"LANGUAGE" -> keyword
+
+(upper_input -> CONTAINS <- keyword) -> is_found
+(is_found -> IF <- ["Keyword Detected", "Keyword Not Found"]) -> status_msg
+
+(status_msg -> CONCAT <- " in ") -> prefix
+(prefix -> CONCAT <- upper_input) -> final_report
+
+final_report    #output: "Keyword Detected in PINCH LANGUAGE"
 ```
 
 ## Syntax
@@ -34,19 +67,23 @@ Using the BNF syntax:
 <num_literal> ::= ('-')? <digit>+ ('.' <digit>+)?
 <str_literal> ::= <char>* 
 
+<from_left_doule_arrow> ::= '=>'
+<from_right_double_arrow> ::= '<='
+<jump_literal> ::= <digit>+ <from_right_double_arrow> | <from_left_double_arrow> <digit>+
+
 <var_name> ::= <small_letter> (<small_letter> | '_')*
 <func_name> ::= <big_letter> (<big_letter> | '_')*
 
-<factor> ::= <num_literal> | '"' <str_literal> '"' | <var-name> | '('<pinch_func>')'
+<factor> ::= <num_literal> | '"' <str_literal> '"' | <jump_literal> | <var-name> | '('<pinch_func>')'
 <factors> ::= '[' (<factor>',')* <factor> ']' | <factor>
 
-<from_left_arrow> ::= '->' | '~>'
-<from_right_arrow> ::= '<-' | '<~'
+<from_left_arrow> ::= '->'
+<from_right_arrow> ::= '<-'
 <left_pinch> ::= <factors> <from_left_arrow>
 <right_pinch> ::= <from_right_arrow> <factors>
 
 <pinch_func> ::= <left_pinch>? <func_name> <right_pinch>?
-<pinch_var> ::= <left_pinch> <var_name> | <var_name> <right_pinch>
+<pinch_var> ::= <left_pinch> <var_name> | <var_name> <right_pinch> | <var_name>
 
 <statement> ::= ( <pinch_var> | <pinch_func> | <factor> ) '\eol'
 <program> ::= <statement>* '\eof'
@@ -54,8 +91,9 @@ Using the BNF syntax:
 
 
 ## Semantics
-- Pinch has two data types: number and text. When operating with numbers, they behave like double with some degree of rounding applied to the output.
-- Pre-defined functions have expected number of arguements of expected types. Feeding a function with incorrect arguements will produce error.
+- Pinch has three data types: Number, Text and the special Jump type. When operating with numbers, they behave like double with some degree of rounding applied to the output.
+- Pre-defined functions have expected number of arguements of expected types. Feeding a function with incorrect arguements will produce error. Refer to [functions](functions.md).
+- Some pre-defined functions return nothing. Assigning such a function result to a variable will produce error. Refer to [functions](functions.md).
 - Although it is syntactically correct to direct more than one factor at a variable at a time (using the `[a,b,...]` closure defined in `factors`), this does not comply with the semantics and will cause error.
 
 ## Interpreter Constraints
