@@ -2,7 +2,7 @@
 
 Pinch is a simple language based solely on dataflow that is represented by arrows. This repository will be an interpreter written in C that interpretes Pinch.
 
-## Example program
+## Example programs
 
 Calculate the hypotenuse of a right triangle:
 ```
@@ -23,7 +23,7 @@ Generate the first 10 numbers of the Fibonacci sequence:
 1 -> b
 10 -> count
 
-a   #output 0, 1, 1, 2...
+a   #output: 0, 1, 1, 2...
 (a -> ADD <- b) -> next
 
 b -> a
@@ -67,9 +67,9 @@ Using the BNF syntax:
 <num_literal> ::= ('-')? <digit>+ ('.' <digit>+)?
 <str_literal> ::= <char>* 
 
-<from_left_doule_arrow> ::= '=>'
-<from_right_double_arrow> ::= '<='
-<jump_literal> ::= <digit>+ <from_right_double_arrow> | <from_left_double_arrow> <digit>+
+<left_double_arrow> ::= '<='
+<right_doule_arrow> ::= '=>'
+<jump_literal> ::= <digit>+ <left_double_arrow> | <right_doule_arrow> <digit>+
 
 <var_name> ::= <small_letter> (<small_letter> | '_')*
 <func_name> ::= <big_letter> (<big_letter> | '_')*
@@ -77,10 +77,10 @@ Using the BNF syntax:
 <factor> ::= <num_literal> | '"' <str_literal> '"' | <jump_literal> | <var-name> | '('<pinch_func>')'
 <factors> ::= '[' (<factor>',')* <factor> ']' | <factor>
 
-<from_left_arrow> ::= '->'
-<from_right_arrow> ::= '<-'
-<left_pinch> ::= <factors> <from_left_arrow>
-<right_pinch> ::= <from_right_arrow> <factors>
+<left_arrow> ::= '<-'
+<right_arrow> ::= '->'
+<left_pinch> ::= <factors> <right_arrow>
+<right_pinch> ::= <left_arrow> <factors>
 
 <pinch_func> ::= <left_pinch>? <func_name> <right_pinch>?
 <pinch_var> ::= <left_pinch> <var_name> | <var_name> <right_pinch> | <var_name>
@@ -96,5 +96,6 @@ Using the BNF syntax:
 - Some pre-defined functions return nothing. Assigning such a function result to a variable will produce error. Refer to [functions](functions.md).
 - Although it is syntactically correct to direct more than one factor at a variable at a time (using the `[a,b,...]` closure defined in `factors`), this does not comply with the semantics and will cause error.
 
-## Interpreter Constraints
-- Any `var_name`, `func_name`, `num_literal` or `str_literal` can be at most 50 characters long.
+## Interpreter constraints
+- Any `var_name`, `func_name`, `num_literal` or `jump_literal` can be at most 64 characters long.
+- Any `str_literal` can be at most 1024 characters long.

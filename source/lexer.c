@@ -52,7 +52,7 @@ struct consume_token_result consume_token(enum TokenType expected_type,
             token_found = true;
         }
         break;
-    case TOKEN_MINUS_SIGN:
+    case TOKEN_MINUS:
         if (input[0] == '-') {
             token_found = true;
         }
@@ -73,6 +73,21 @@ struct consume_token_result consume_token(enum TokenType expected_type,
         break;
     case TOKEN_COMMA:
         if (input[0] == ',') {
+            token_found = true;
+        }
+        break;
+    case TOKEN_LESS_THAN:
+        if (input[0] == '<') {
+            token_found = true;
+        }
+        break;
+    case TOKEN_GREATER_THAN:
+        if (input[0] == '>') {
+            token_found = true;
+        }
+        break;
+    case TOKEN_EQUAL:
+        if (input[0] == '=') {
             token_found = true;
         }
         break;
@@ -111,8 +126,8 @@ struct consume_token_result consume_token(enum TokenType expected_type,
 // <var_name> ::= <small_letter> (<small_letter> | '_')*
 struct consume_name_result consume_var_name(char *input) {
 
-    // Allocate 50 char wide buffer for var_name and initialise
-    char *var_name = xalloc((STRING_BUFFER_LENGTH + 1) * sizeof(char),
+    // Allocate 64 char wide buffer for var_name and initialise
+    char *var_name = xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                             "Interpreter Error: Fail to allocate memory while "
                             "parsing variable name.\n");
     var_name[0] = '\0';
@@ -122,7 +137,7 @@ struct consume_name_result consume_var_name(char *input) {
         consume_token(TOKEN_SMALL_LETTER, input);
     if (!result.success) {
         // Step 1 not successful, return with consume fail
-        free(var_name);
+        xfree(var_name);
         return (struct consume_name_result){false, NULL, input};
     }
 
@@ -135,18 +150,20 @@ struct consume_name_result consume_var_name(char *input) {
     bool reached_end = false;
 
     while (!reached_end) {
-        // If var_name exceeds buffer size, exit program
-        if (var_name_length >= STRING_BUFFER_LENGTH) {
-            fprintf(stderr,
-                    "Interpreter Constraint: Variable name exceeds maximum "
-                    "length of %d characters.\n",
-                    STRING_BUFFER_LENGTH);
-            free(var_name);
-            exit(EXIT_FAILURE);
-        }
-
         result = consume_token(TOKEN_SMALL_LETTER_OR_UNDERSCORE, current_input);
+
         if (result.success) {
+            // If var_name exceeds buffer size, exit program
+            if (var_name_length >= NAME_BUFFER_LENGTH) {
+                fprintf(stderr,
+                        "Interpreter Constraint: Variable name exceeds maximum "
+                        "length of %d characters.\n",
+                        NAME_BUFFER_LENGTH);
+                xfree(var_name);
+                exit(EXIT_FAILURE);
+            }
+
+            // If successful, add to buffer
             append_char(var_name, result.consumed_token);
             current_input = result.next_input;
             var_name_length++;
@@ -162,8 +179,8 @@ struct consume_name_result consume_var_name(char *input) {
 // <func_name> ::= <big_letter> (<big_letter> | '_')*
 struct consume_name_result consume_func_name(char *input) {
 
-    // Allocate 50 char wide buffer for func_name and initialise
-    char *func_name = xalloc((STRING_BUFFER_LENGTH + 1) * sizeof(char),
+    // Allocate 64 char wide buffer for func_name and initialise
+    char *func_name = xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                              "Interpreter Error: Fail to allocate memory while "
                              "parsing function name.\n");
     func_name[0] = '\0';
@@ -172,7 +189,7 @@ struct consume_name_result consume_func_name(char *input) {
     struct consume_token_result result = consume_token(TOKEN_BIG_LETTER, input);
     if (!result.success) {
         // Step 1 not successful, return with consume fail
-        free(func_name);
+        xfree(func_name);
         return (struct consume_name_result){false, NULL, input};
     }
 
@@ -185,18 +202,19 @@ struct consume_name_result consume_func_name(char *input) {
     bool reached_end = false;
 
     while (!reached_end) {
-        // If func_name exceeds buffer size, exit program
-        if (func_name_length >= STRING_BUFFER_LENGTH) {
-            fprintf(stderr,
-                    "Interpreter Constraint: Function name exceeds maximum "
-                    "length of %d characters.\n",
-                    STRING_BUFFER_LENGTH);
-            free(func_name);
-            exit(EXIT_FAILURE);
-        }
-
         result = consume_token(TOKEN_BIG_LETTER_OR_UNDERSCORE, current_input);
         if (result.success) {
+            // If func_name exceeds buffer size, exit program
+            if (func_name_length >= NAME_BUFFER_LENGTH) {
+                fprintf(stderr,
+                        "Interpreter Constraint: Function name exceeds maximum "
+                        "length of %d characters.\n",
+                        NAME_BUFFER_LENGTH);
+                xfree(func_name);
+                exit(EXIT_FAILURE);
+            }
+
+            // If successful, add to buffer
             append_char(func_name, result.consumed_token);
             current_input = result.next_input;
             func_name_length++;
@@ -215,7 +233,7 @@ struct consume_name_result consume_func_name(char *input) {
 // <char> ::= any ASCII char excluding '"'
 struct consume_name_result consume_str_literal(char *input) {
 
-    // Allocate 50 char wide buffer for string buffer and initialise
+    // Allocate 64 char wide buffer for string buffer and initialise
     char *str_buffer =
         xalloc((STRING_BUFFER_LENGTH + 1) * sizeof(char),
                "Interpreter Error: Fail to allocate memory while "
@@ -233,7 +251,7 @@ struct consume_name_result consume_str_literal(char *input) {
         current_input = result.next_input;
     } else {
         // If unsuccessful, return str_literal consume unsuccessful
-        free(str_buffer);
+        xfree(str_buffer);
         return (struct consume_name_result){false, NULL, input};
     }
 
@@ -241,18 +259,19 @@ struct consume_name_result consume_str_literal(char *input) {
     bool reached_end = false;
 
     while (!reached_end) {
-        // If str_literal exceeds buffer size, exit program
-        if (str_length >= STRING_BUFFER_LENGTH) {
-            fprintf(stderr,
-                    "Interpreter Constraint: String literal exceeds maximum "
-                    "length of %d characters.\n",
-                    STRING_BUFFER_LENGTH);
-            free(str_buffer);
-            exit(EXIT_FAILURE);
-        }
-
         result = consume_token(TOKEN_ASCII_CHAR, current_input);
         if (result.success) {
+            // If str_literal exceeds buffer size, exit program
+            if (str_length >= STRING_BUFFER_LENGTH) {
+                fprintf(stderr,
+                        "Interpreter Constraint: String literal exceeds maximum "
+                        "length of %d characters.\n",
+                        STRING_BUFFER_LENGTH);
+                xfree(str_buffer);
+                exit(EXIT_FAILURE);
+            }
+
+            // If successful, add to buffer
             append_char(str_buffer, result.consumed_token);
             current_input = result.next_input;
             str_length++;
@@ -271,7 +290,7 @@ struct consume_name_result consume_str_literal(char *input) {
         fprintf(stderr,
                 "Syntax Error: Unclosed quotation for string literal %s.\n",
                 str_buffer);
-        free(str_buffer);
+        xfree(str_buffer);
         exit(EXIT_FAILURE);
     }
 
@@ -282,9 +301,9 @@ struct consume_name_result consume_str_literal(char *input) {
 // <num_literal> ::= ('-')? <digit>+ ('.' <digit>+)?
 struct consume_num_result consume_num_literal(char *input) {
 
-    // Allocate 50 char wide buffer for num_literal input and initialise
+    // Allocate 64 char wide buffer for num_literal input and initialise
     char *num_buffer =
-        xalloc((STRING_BUFFER_LENGTH + 1) * sizeof(char),
+        xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                "Interpreter Error: Fail to allocate memory while "
                "parsing number literal.\n");
     num_buffer[0] = '\0';
@@ -294,7 +313,7 @@ struct consume_num_result consume_num_literal(char *input) {
 
     // Step 1: try to consume a minus sign (optional)
     struct consume_token_result result =
-        consume_token(TOKEN_MINUS_SIGN, current_input);
+        consume_token(TOKEN_MINUS, current_input);
     if (result.success) {
         // If successful, add to buffer
         append_char(num_buffer, result.consumed_token);
@@ -311,7 +330,7 @@ struct consume_num_result consume_num_literal(char *input) {
         num_length++;
     } else {
         // If unsuccessful, free buffer and return unsuccessful consume
-        free(num_buffer);
+        xfree(num_buffer);
         return (struct consume_num_result){false, 0, input};
     }
 
@@ -320,16 +339,6 @@ struct consume_num_result consume_num_literal(char *input) {
     bool reached_end = false;
 
     while (!reached_end) {
-        // If num_buffer length exceeds buffer size, exit program
-        if (num_length >= STRING_BUFFER_LENGTH) {
-            fprintf(stderr,
-                    "Interpreter Constraint: Number literal exceeds maximum "
-                    "length of %d characters.\n",
-                    STRING_BUFFER_LENGTH);
-            free(num_buffer);
-            exit(EXIT_FAILURE);
-        }
-
         if (saw_decimal_point) {
             // If there is already a decimal point, try to consume digit only
             result = consume_token(TOKEN_DIGIT, current_input);
@@ -339,6 +348,17 @@ struct consume_num_result consume_num_literal(char *input) {
         }
 
         if (result.success) {
+            // If num_buffer length exceeds buffer size, exit program
+            if (num_length >= NAME_BUFFER_LENGTH) {
+                fprintf(stderr,
+                        "Interpreter Constraint: Number literal exceeds maximum "
+                        "length of %d characters.\n",
+                        NAME_BUFFER_LENGTH);
+                xfree(num_buffer);
+                exit(EXIT_FAILURE);
+            }
+
+            // If successful, add to buffer
             append_char(num_buffer, result.consumed_token);
             current_input = result.next_input;
             num_length++;
@@ -351,6 +371,196 @@ struct consume_num_result consume_num_literal(char *input) {
 
     // Convert the string to a double and free the buffer
     double consumed_num = atof(num_buffer);
-    free(num_buffer);
+    xfree(num_buffer);
     return (struct consume_num_result){true, consumed_num, current_input};
+}
+
+// consume_left_arrow :: Attempt to consume a left_arrow
+// <left_arrow> ::= '<-'
+struct consume_arrow_result consume_left_arrow(char *input) {
+
+    bool consume_success = false;
+
+    // Step 1: Try to consume '<'
+    struct consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
+
+    if (result.success) {
+        // Step 2: Try to consume '-', if previously successful
+        result = consume_token(TOKEN_MINUS, result.next_input);
+        consume_success = result.success;
+    }
+
+    if (consume_success) {
+        return (struct consume_arrow_result){true, result.next_input};
+    } else {
+        return (struct consume_arrow_result){false, input};
+    }
+}
+
+// consume_right_arrow :: Attempt to consume a right_arrow
+// <right_arrow> ::= '->'
+struct consume_arrow_result consume_right_arrow(char *input) {
+
+    bool consume_success = false;
+
+    // Step 1: Try to consume '-'
+    struct consume_token_result result = consume_token(TOKEN_MINUS, input);
+
+    if (result.success) {
+        // Step 2: Try to consume '>', if previously successful
+        result = consume_token(TOKEN_GREATER_THAN, result.next_input);
+        consume_success = result.success;
+    }
+
+    if (consume_success) {
+        return (struct consume_arrow_result){true, result.next_input};
+    } else {
+        return (struct consume_arrow_result){false, input};
+    }
+}
+
+// consume_left_double_arrow :: Attempt to consume a left_double_arrow
+// <left_double_arrow> ::= '<='
+struct consume_arrow_result consume_left_double_arrow(char *input) {
+
+    bool consume_success = false;
+
+    // Step 1: Try to consume '<'
+    struct consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
+
+    if (result.success) {
+        // Step 2: Try to consume '=', if previously successful
+        result = consume_token(TOKEN_EQUAL, result.next_input);
+        consume_success = result.success;
+    }
+
+    if (consume_success) {
+        return (struct consume_arrow_result){true, result.next_input};
+    } else {
+        return (struct consume_arrow_result){false, input};
+    }
+}
+
+// consume_right_doule_arrow :: Attempt to consume a right_doule_arrow
+// <right_doule_arrow> ::= '=>'
+struct consume_arrow_result consume_right_doule_arrow(char *input) {
+
+    bool consume_success = false;
+
+    // Step 1: Try to consume '='
+    struct consume_token_result result = consume_token(TOKEN_EQUAL, input);
+
+    if (result.success) {
+        // Step 2: Try to consume '>', if previously successful
+        result = consume_token(TOKEN_GREATER_THAN, result.next_input);
+        consume_success = result.success;
+    }
+
+    if (consume_success) {
+        return (struct consume_arrow_result){true, result.next_input};
+    } else {
+        return (struct consume_arrow_result){false, input};
+    }
+}
+
+// consume_jump_literal :: Attempt to consume a list of digits
+// <digit>+
+struct consume_int_result consume_integer(char *input) {
+    char *num_buffer =
+        xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
+               "Interpreter Error: Fail to allocate memory while "
+               "parsing number literal.\n");
+    num_buffer[0] = '\0';
+
+    char *current_input = input;
+    int num_length = 0;
+
+    bool reached_end = false;
+    struct consume_token_result result;
+
+    // Iteratively consume digits
+    while(!reached_end) {
+        result = consume_token(TOKEN_DIGIT, current_input);
+
+        if (result.success) {
+            if (num_length >= NAME_BUFFER_LENGTH) {
+                fprintf(stderr,
+                        "Interpreter Constraint: Number literal exceeds maximum "
+                        "length of %d characters.\n",
+                        NAME_BUFFER_LENGTH);
+                xfree(num_buffer);
+                exit(EXIT_FAILURE);
+            }
+
+            // If successful, add to buffer
+            append_char(num_buffer, result.consumed_token);
+            current_input = result.next_input;
+            num_length++;
+        } else {
+            // If unsuccessful, set reached_end flag
+            reached_end = true;
+        }
+    }
+
+    if (num_length > 0) {
+        int consumed_num = atoi(num_buffer);
+        xfree(num_buffer);
+        return (struct consume_int_result){true, consumed_num, current_input};
+    } else {
+        xfree(num_buffer);
+        return (struct consume_int_result){false, 0, input};
+    }
+}
+
+// consume_jump_literal :: Attempt to consume a jump_literal
+// <left_double_arrow> ::= '<='
+// <right_doule_arrow> ::= '=>'
+// <jump_literal> ::= <digit>+ <left_double_arrow> | <right_doule_arrow> <digit>+
+struct consume_jump_result consume_jump_literal(char *input) {
+
+    enum JumpType jump_type = JUMP_NOT_FOUND;
+    bool consume_success = false;
+
+    char *current_input = input;
+    int num_length = 0;
+
+    struct consume_arrow_result arrow_result;
+    struct consume_int_result int_result;
+
+    // Step 1: Try to consume <right_doule_arrow> '=>'
+    arrow_result = consume_right_doule_arrow(current_input);
+
+    // If successful, this is forward jump, try to consume digits
+    if (arrow_result.success) {
+        jump_type = JUMP_FORWARD;
+        current_input = arrow_result.next_input;
+        int_result = consume_integer(current_input);
+
+        if (int_result.success) {
+            consume_success = true;
+            current_input = int_result.next_input;
+        }
+    }
+
+    // If unsuccessful, this is backward jump, consume digits then '<='
+    else {
+        jump_type = JUMP_BACKWARD;
+        int_result = consume_integer(current_input);
+
+        if (int_result.success) {
+            current_input = int_result.next_input;
+            arrow_result = consume_left_double_arrow(current_input);
+
+            if (arrow_result.success) {
+                consume_success = true;
+                current_input = arrow_result.next_input;
+            }
+        }
+    }
+
+    if (consume_success) {
+        return (struct consume_jump_result){true, jump_type, int_result.number, current_input};
+    } else {
+        return (struct consume_jump_result){false, JUMP_NOT_FOUND, 0, input}; 
+    }
 }
