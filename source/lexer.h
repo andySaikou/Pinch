@@ -9,7 +9,7 @@
 #define NAME_BUFFER_LENGTH 64
 
 
-enum TokenType {
+typedef enum {
     TOKEN_ASCII_CHAR,
     TOKEN_SMALL_LETTER,
     TOKEN_SMALL_LETTER_OR_UNDERSCORE,
@@ -27,57 +27,59 @@ enum TokenType {
     TOKEN_CLOSE_PAREN,
     TOKEN_OPEN_SQUARE_BRACKET,
     TOKEN_CLOSE_SQUARE_BRACKET
-};
+} token_type;
 
-struct consume_token_result {
+typedef struct {
     bool success;
     char consumed_token;
     char *next_input;
-};
+} consume_token_result;
 
-struct consume_name_result {
+typedef struct {
     bool success;
     char *consumed;
     char *next_input;
-};
+} consume_name_result;
 
-struct consume_num_result {
+typedef struct {
     bool success;
     double number;
     char *next_input;
-};
+} consume_num_result;
 
-struct consume_arrow_result {
+typedef struct {
     bool success;
     char *next_input;
-};
+} consume_arrow_result;
 
-struct consume_int_result {
+typedef struct {
     bool success;
     int number;
     char *next_input;
-};
+} consume_int_result;
 
-enum JumpType {
+typedef enum {
     JUMP_FORWARD,
     JUMP_BACKWARD,
     JUMP_NOT_FOUND
-};
+} jump_type;
 
-struct consume_jump_result {
+typedef struct {
     bool success;
-    enum JumpType type;
+    jump_type type;
     int lines;
     char *next_input;
-};
+} consume_jump_result;
 
-struct consume_token_result consume_token(enum TokenType expected_type, char *input);
-struct consume_name_result consume_var_name(char *input);
-struct consume_name_result consume_func_name(char *input);
-struct consume_name_result consume_str_literal(char *input);
-struct consume_num_result consume_num_literal(char *input);
-struct consume_arrow_result consume_left_arrow(char *input);
-struct consume_arrow_result consume_right_arrow(char *input);
-struct consume_int_result consume_integer(char *input);
+char *skip_whitespace(char *input);
+consume_token_result consume_token(token_type expected_type, char *input);
+consume_name_result consume_var_name(char *input);
+consume_name_result consume_func_name(char *input);
+consume_name_result consume_str_literal(char *input);
+consume_num_result consume_num_literal(char *input);
+consume_arrow_result consume_left_arrow(char *input);
+consume_arrow_result consume_right_arrow(char *input);
+consume_int_result consume_integer(char *input);
+consume_jump_result consume_jump_literal(char *input);
 
 #endif

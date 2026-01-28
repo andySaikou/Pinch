@@ -74,7 +74,7 @@ Using the BNF syntax:
 <var_name> ::= <small_letter> (<small_letter> | '_')*
 <func_name> ::= <big_letter> (<big_letter> | '_')*
 
-<factor> ::= <num_literal> | '"' <str_literal> '"' | <jump_literal> | <var-name> | '('<pinch_func>')'
+<factor> ::= <num_literal> | '"' <str_literal> '"' | <jump_literal> | <var_name> | '('<pinch_func>')'
 <factors> ::= '[' (<factor>',')* <factor> ']' | <factor>
 
 <left_arrow> ::= '<-'

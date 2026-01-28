@@ -18,12 +18,20 @@ void append_char(char *s, char c) {
     *s = '\0';
 }
 
+// Repeatedly skip whitespace characters
+char *skip_whitespace(char *input) {
+    while (*input == ' ' || *input == '\t' || *input == '\n' || *input == '\r') {
+        input++;
+    }
+    return input;
+}
+
 // consume_token :: Attempt to consume a character of the expected type
-struct consume_token_result consume_token(enum TokenType expected_type,
+consume_token_result consume_token(token_type expected_type,
                                           char *input) {
     // Input is empty
     if (input[0] == '\0') {
-        return (struct consume_token_result){false, '\0', input};
+        return (consume_token_result){false, '\0', input};
     }
 
     bool token_found = false;
@@ -116,15 +124,15 @@ struct consume_token_result consume_token(enum TokenType expected_type,
     }
 
     if (token_found) {
-        return (struct consume_token_result){true, input[0], &input[1]};
+        return (consume_token_result){true, input[0], &input[1]};
     } else {
-        return (struct consume_token_result){false, '\0', input};
+        return (consume_token_result){false, '\0', input};
     }
 }
 
 // consume_var_name :: Attempt to consume a valid var_name
 // <var_name> ::= <small_letter> (<small_letter> | '_')*
-struct consume_name_result consume_var_name(char *input) {
+consume_name_result consume_var_name(char *input) {
 
     // Allocate 64 char wide buffer for var_name and initialise
     char *var_name = xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
@@ -133,12 +141,12 @@ struct consume_name_result consume_var_name(char *input) {
     var_name[0] = '\0';
 
     // Step 1: try to consume a small letter, return on fail
-    struct consume_token_result result =
+    consume_token_result result =
         consume_token(TOKEN_SMALL_LETTER, input);
     if (!result.success) {
         // Step 1 not successful, return with consume fail
         xfree(var_name);
-        return (struct consume_name_result){false, NULL, input};
+        return (consume_name_result){false, NULL, input};
     }
 
     // Add the first consumed token to var_name buffer
@@ -172,12 +180,12 @@ struct consume_name_result consume_var_name(char *input) {
         }
     }
 
-    return (struct consume_name_result){true, var_name, current_input};
+    return (consume_name_result){true, var_name, current_input};
 }
 
 // consume_func_name :: Attempt to consume a valid func_name
 // <func_name> ::= <big_letter> (<big_letter> | '_')*
-struct consume_name_result consume_func_name(char *input) {
+consume_name_result consume_func_name(char *input) {
 
     // Allocate 64 char wide buffer for func_name and initialise
     char *func_name = xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
@@ -186,11 +194,11 @@ struct consume_name_result consume_func_name(char *input) {
     func_name[0] = '\0';
 
     // Step 1: try to consume a big letter, return on fail
-    struct consume_token_result result = consume_token(TOKEN_BIG_LETTER, input);
+    consume_token_result result = consume_token(TOKEN_BIG_LETTER, input);
     if (!result.success) {
         // Step 1 not successful, return with consume fail
         xfree(func_name);
-        return (struct consume_name_result){false, NULL, input};
+        return (consume_name_result){false, NULL, input};
     }
 
     // Add the first consumed token to func_name buffer
@@ -223,7 +231,7 @@ struct consume_name_result consume_func_name(char *input) {
         }
     }
 
-    return (struct consume_name_result){true, func_name, current_input};
+    return (consume_name_result){true, func_name, current_input};
 }
 
 // consume_str_literal :: Attempt to consume a str_literal including the
@@ -231,7 +239,7 @@ struct consume_name_result consume_func_name(char *input) {
 // '"' <str_literal> '"'
 // <str_literal> ::= <char>*
 // <char> ::= any ASCII char excluding '"'
-struct consume_name_result consume_str_literal(char *input) {
+consume_name_result consume_str_literal(char *input) {
 
     // Allocate 64 char wide buffer for string buffer and initialise
     char *str_buffer =
@@ -244,7 +252,7 @@ struct consume_name_result consume_str_literal(char *input) {
     int str_length = 0;
 
     // Step 1: try to consume a quotation mark, return on fail
-    struct consume_token_result result =
+    consume_token_result result =
         consume_token(TOKEN_QUOTATION, current_input);
     if (result.success) {
         // If successful, advance input (no need to add quoatation to buffer)
@@ -252,7 +260,7 @@ struct consume_name_result consume_str_literal(char *input) {
     } else {
         // If unsuccessful, return str_literal consume unsuccessful
         xfree(str_buffer);
-        return (struct consume_name_result){false, NULL, input};
+        return (consume_name_result){false, NULL, input};
     }
 
     // Step 2: iteratively try to consume ACSII char
@@ -294,12 +302,12 @@ struct consume_name_result consume_str_literal(char *input) {
         exit(EXIT_FAILURE);
     }
 
-    return (struct consume_name_result){true, str_buffer, current_input};
+    return (consume_name_result){true, str_buffer, current_input};
 }
 
 // consume_num_literal :: Attempt to consume a num_literal
 // <num_literal> ::= ('-')? <digit>+ ('.' <digit>+)?
-struct consume_num_result consume_num_literal(char *input) {
+consume_num_result consume_num_literal(char *input) {
 
     // Allocate 64 char wide buffer for num_literal input and initialise
     char *num_buffer =
@@ -312,7 +320,7 @@ struct consume_num_result consume_num_literal(char *input) {
     int num_length = 0;
 
     // Step 1: try to consume a minus sign (optional)
-    struct consume_token_result result =
+    consume_token_result result =
         consume_token(TOKEN_MINUS, current_input);
     if (result.success) {
         // If successful, add to buffer
@@ -331,7 +339,7 @@ struct consume_num_result consume_num_literal(char *input) {
     } else {
         // If unsuccessful, free buffer and return unsuccessful consume
         xfree(num_buffer);
-        return (struct consume_num_result){false, 0, input};
+        return (consume_num_result){false, 0, input};
     }
 
     // Step 3: iteratively try to consume digit or decimal point
@@ -372,17 +380,17 @@ struct consume_num_result consume_num_literal(char *input) {
     // Convert the string to a double and free the buffer
     double consumed_num = atof(num_buffer);
     xfree(num_buffer);
-    return (struct consume_num_result){true, consumed_num, current_input};
+    return (consume_num_result){true, consumed_num, current_input};
 }
 
 // consume_left_arrow :: Attempt to consume a left_arrow
 // <left_arrow> ::= '<-'
-struct consume_arrow_result consume_left_arrow(char *input) {
+consume_arrow_result consume_left_arrow(char *input) {
 
     bool consume_success = false;
 
     // Step 1: Try to consume '<'
-    struct consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
+    consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
 
     if (result.success) {
         // Step 2: Try to consume '-', if previously successful
@@ -391,20 +399,20 @@ struct consume_arrow_result consume_left_arrow(char *input) {
     }
 
     if (consume_success) {
-        return (struct consume_arrow_result){true, result.next_input};
+        return (consume_arrow_result){true, result.next_input};
     } else {
-        return (struct consume_arrow_result){false, input};
+        return (consume_arrow_result){false, input};
     }
 }
 
 // consume_right_arrow :: Attempt to consume a right_arrow
 // <right_arrow> ::= '->'
-struct consume_arrow_result consume_right_arrow(char *input) {
+consume_arrow_result consume_right_arrow(char *input) {
 
     bool consume_success = false;
 
     // Step 1: Try to consume '-'
-    struct consume_token_result result = consume_token(TOKEN_MINUS, input);
+    consume_token_result result = consume_token(TOKEN_MINUS, input);
 
     if (result.success) {
         // Step 2: Try to consume '>', if previously successful
@@ -413,20 +421,20 @@ struct consume_arrow_result consume_right_arrow(char *input) {
     }
 
     if (consume_success) {
-        return (struct consume_arrow_result){true, result.next_input};
+        return (consume_arrow_result){true, result.next_input};
     } else {
-        return (struct consume_arrow_result){false, input};
+        return (consume_arrow_result){false, input};
     }
 }
 
 // consume_left_double_arrow :: Attempt to consume a left_double_arrow
 // <left_double_arrow> ::= '<='
-struct consume_arrow_result consume_left_double_arrow(char *input) {
+consume_arrow_result consume_left_double_arrow(char *input) {
 
     bool consume_success = false;
 
     // Step 1: Try to consume '<'
-    struct consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
+    consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
 
     if (result.success) {
         // Step 2: Try to consume '=', if previously successful
@@ -435,20 +443,20 @@ struct consume_arrow_result consume_left_double_arrow(char *input) {
     }
 
     if (consume_success) {
-        return (struct consume_arrow_result){true, result.next_input};
+        return (consume_arrow_result){true, result.next_input};
     } else {
-        return (struct consume_arrow_result){false, input};
+        return (consume_arrow_result){false, input};
     }
 }
 
 // consume_right_doule_arrow :: Attempt to consume a right_doule_arrow
 // <right_doule_arrow> ::= '=>'
-struct consume_arrow_result consume_right_doule_arrow(char *input) {
+consume_arrow_result consume_right_doule_arrow(char *input) {
 
     bool consume_success = false;
 
     // Step 1: Try to consume '='
-    struct consume_token_result result = consume_token(TOKEN_EQUAL, input);
+    consume_token_result result = consume_token(TOKEN_EQUAL, input);
 
     if (result.success) {
         // Step 2: Try to consume '>', if previously successful
@@ -457,15 +465,15 @@ struct consume_arrow_result consume_right_doule_arrow(char *input) {
     }
 
     if (consume_success) {
-        return (struct consume_arrow_result){true, result.next_input};
+        return (consume_arrow_result){true, result.next_input};
     } else {
-        return (struct consume_arrow_result){false, input};
+        return (consume_arrow_result){false, input};
     }
 }
 
 // consume_jump_literal :: Attempt to consume a list of digits
 // <digit>+
-struct consume_int_result consume_integer(char *input) {
+consume_int_result consume_integer(char *input) {
     char *num_buffer =
         xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                "Interpreter Error: Fail to allocate memory while "
@@ -476,7 +484,7 @@ struct consume_int_result consume_integer(char *input) {
     int num_length = 0;
 
     bool reached_end = false;
-    struct consume_token_result result;
+    consume_token_result result;
 
     // Iteratively consume digits
     while(!reached_end) {
@@ -505,10 +513,10 @@ struct consume_int_result consume_integer(char *input) {
     if (num_length > 0) {
         int consumed_num = atoi(num_buffer);
         xfree(num_buffer);
-        return (struct consume_int_result){true, consumed_num, current_input};
+        return (consume_int_result){true, consumed_num, current_input};
     } else {
         xfree(num_buffer);
-        return (struct consume_int_result){false, 0, input};
+        return (consume_int_result){false, 0, input};
     }
 }
 
@@ -516,23 +524,22 @@ struct consume_int_result consume_integer(char *input) {
 // <left_double_arrow> ::= '<='
 // <right_doule_arrow> ::= '=>'
 // <jump_literal> ::= <digit>+ <left_double_arrow> | <right_doule_arrow> <digit>+
-struct consume_jump_result consume_jump_literal(char *input) {
+consume_jump_result consume_jump_literal(char *input) {
 
-    enum JumpType jump_type = JUMP_NOT_FOUND;
+    jump_type type = JUMP_NOT_FOUND;
     bool consume_success = false;
 
     char *current_input = input;
-    int num_length = 0;
 
-    struct consume_arrow_result arrow_result;
-    struct consume_int_result int_result;
+    consume_arrow_result arrow_result;
+    consume_int_result int_result;
 
     // Step 1: Try to consume <right_doule_arrow> '=>'
     arrow_result = consume_right_doule_arrow(current_input);
 
     // If successful, this is forward jump, try to consume digits
     if (arrow_result.success) {
-        jump_type = JUMP_FORWARD;
+        type = JUMP_FORWARD;
         current_input = arrow_result.next_input;
         int_result = consume_integer(current_input);
 
@@ -544,7 +551,7 @@ struct consume_jump_result consume_jump_literal(char *input) {
 
     // If unsuccessful, this is backward jump, consume digits then '<='
     else {
-        jump_type = JUMP_BACKWARD;
+        type = JUMP_BACKWARD;
         int_result = consume_integer(current_input);
 
         if (int_result.success) {
@@ -559,8 +566,8 @@ struct consume_jump_result consume_jump_literal(char *input) {
     }
 
     if (consume_success) {
-        return (struct consume_jump_result){true, jump_type, int_result.number, current_input};
+        return (consume_jump_result){true, type, int_result.number, current_input};
     } else {
-        return (struct consume_jump_result){false, JUMP_NOT_FOUND, 0, input}; 
+        return (consume_jump_result){false, JUMP_NOT_FOUND, 0, input}; 
     }
 }
