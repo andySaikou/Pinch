@@ -134,6 +134,8 @@ consume_token_result consume_token(token_type expected_type,
 // <var_name> ::= <small_letter> (<small_letter> | '_')*
 consume_name_result consume_var_name(char *input) {
 
+    char *current_input = skip_whitespace(input);
+    
     // Allocate 64 char wide buffer for var_name and initialise
     char *var_name = xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                             "Interpreter Error: Fail to allocate memory while "
@@ -142,7 +144,7 @@ consume_name_result consume_var_name(char *input) {
 
     // Step 1: try to consume a small letter, return on fail
     consume_token_result result =
-        consume_token(TOKEN_SMALL_LETTER, input);
+        consume_token(TOKEN_SMALL_LETTER, current_input);
     if (!result.success) {
         // Step 1 not successful, return with consume fail
         xfree(var_name);
@@ -154,7 +156,7 @@ consume_name_result consume_var_name(char *input) {
     int var_name_length = 1;
 
     // Step 2: iteratively try to consume small letter or underscore
-    char *current_input = result.next_input;
+    current_input = result.next_input;
     bool reached_end = false;
 
     while (!reached_end) {
@@ -187,6 +189,8 @@ consume_name_result consume_var_name(char *input) {
 // <func_name> ::= <big_letter> (<big_letter> | '_')*
 consume_name_result consume_func_name(char *input) {
 
+    char *current_input = skip_whitespace(input);
+
     // Allocate 64 char wide buffer for func_name and initialise
     char *func_name = xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                              "Interpreter Error: Fail to allocate memory while "
@@ -194,7 +198,7 @@ consume_name_result consume_func_name(char *input) {
     func_name[0] = '\0';
 
     // Step 1: try to consume a big letter, return on fail
-    consume_token_result result = consume_token(TOKEN_BIG_LETTER, input);
+    consume_token_result result = consume_token(TOKEN_BIG_LETTER, current_input);
     if (!result.success) {
         // Step 1 not successful, return with consume fail
         xfree(func_name);
@@ -206,7 +210,7 @@ consume_name_result consume_func_name(char *input) {
     int func_name_length = 1;
 
     // Step 2: iteratively try to consume big letter or underscore
-    char *current_input = result.next_input;
+    current_input = result.next_input;
     bool reached_end = false;
 
     while (!reached_end) {
@@ -241,6 +245,8 @@ consume_name_result consume_func_name(char *input) {
 // <char> ::= any ASCII char excluding '"'
 consume_name_result consume_str_literal(char *input) {
 
+    char *current_input = skip_whitespace(input);
+
     // Allocate 64 char wide buffer for string buffer and initialise
     char *str_buffer =
         xalloc((STRING_BUFFER_LENGTH + 1) * sizeof(char),
@@ -248,7 +254,6 @@ consume_name_result consume_str_literal(char *input) {
                "parsing function name.\n");
     str_buffer[0] = '\0';
 
-    char *current_input = input;
     int str_length = 0;
 
     // Step 1: try to consume a quotation mark, return on fail
@@ -309,6 +314,8 @@ consume_name_result consume_str_literal(char *input) {
 // <num_literal> ::= ('-')? <digit>+ ('.' <digit>+)?
 consume_num_result consume_num_literal(char *input) {
 
+    char *current_input = skip_whitespace(input);
+    
     // Allocate 64 char wide buffer for num_literal input and initialise
     char *num_buffer =
         xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
@@ -316,7 +323,6 @@ consume_num_result consume_num_literal(char *input) {
                "parsing number literal.\n");
     num_buffer[0] = '\0';
 
-    char *current_input = input;
     int num_length = 0;
 
     // Step 1: try to consume a minus sign (optional)
@@ -387,10 +393,12 @@ consume_num_result consume_num_literal(char *input) {
 // <left_arrow> ::= '<-'
 consume_arrow_result consume_left_arrow(char *input) {
 
+    char *current_input = skip_whitespace(input);
+
     bool consume_success = false;
 
     // Step 1: Try to consume '<'
-    consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
+    consume_token_result result = consume_token(TOKEN_LESS_THAN, current_input);
 
     if (result.success) {
         // Step 2: Try to consume '-', if previously successful
@@ -409,10 +417,12 @@ consume_arrow_result consume_left_arrow(char *input) {
 // <right_arrow> ::= '->'
 consume_arrow_result consume_right_arrow(char *input) {
 
+    char *current_input = skip_whitespace(input);
+
     bool consume_success = false;
 
     // Step 1: Try to consume '-'
-    consume_token_result result = consume_token(TOKEN_MINUS, input);
+    consume_token_result result = consume_token(TOKEN_MINUS, current_input);
 
     if (result.success) {
         // Step 2: Try to consume '>', if previously successful
@@ -431,10 +441,12 @@ consume_arrow_result consume_right_arrow(char *input) {
 // <left_double_arrow> ::= '<='
 consume_arrow_result consume_left_double_arrow(char *input) {
 
+    char *current_input = skip_whitespace(input);
+
     bool consume_success = false;
 
     // Step 1: Try to consume '<'
-    consume_token_result result = consume_token(TOKEN_LESS_THAN, input);
+    consume_token_result result = consume_token(TOKEN_LESS_THAN, current_input);
 
     if (result.success) {
         // Step 2: Try to consume '=', if previously successful
@@ -453,10 +465,12 @@ consume_arrow_result consume_left_double_arrow(char *input) {
 // <right_doule_arrow> ::= '=>'
 consume_arrow_result consume_right_doule_arrow(char *input) {
 
+    char *current_input = skip_whitespace(input);
+
     bool consume_success = false;
 
     // Step 1: Try to consume '='
-    consume_token_result result = consume_token(TOKEN_EQUAL, input);
+    consume_token_result result = consume_token(TOKEN_EQUAL, current_input);
 
     if (result.success) {
         // Step 2: Try to consume '>', if previously successful
@@ -474,13 +488,15 @@ consume_arrow_result consume_right_doule_arrow(char *input) {
 // consume_jump_literal :: Attempt to consume a list of digits
 // <digit>+
 consume_int_result consume_integer(char *input) {
+
+    char *current_input = skip_whitespace(input);
+
     char *num_buffer =
         xalloc((NAME_BUFFER_LENGTH + 1) * sizeof(char),
                "Interpreter Error: Fail to allocate memory while "
                "parsing number literal.\n");
     num_buffer[0] = '\0';
 
-    char *current_input = input;
     int num_length = 0;
 
     bool reached_end = false;
@@ -526,10 +542,10 @@ consume_int_result consume_integer(char *input) {
 // <jump_literal> ::= <digit>+ <left_double_arrow> | <right_doule_arrow> <digit>+
 consume_jump_result consume_jump_literal(char *input) {
 
+    char *current_input = skip_whitespace(input);
+    
     jump_type type = JUMP_NOT_FOUND;
     bool consume_success = false;
-
-    char *current_input = input;
 
     consume_arrow_result arrow_result;
     consume_int_result int_result;
@@ -540,7 +556,7 @@ consume_jump_result consume_jump_literal(char *input) {
     // If successful, this is forward jump, try to consume digits
     if (arrow_result.success) {
         type = JUMP_FORWARD;
-        current_input = arrow_result.next_input;
+        current_input = skip_whitespace(arrow_result.next_input);
         int_result = consume_integer(current_input);
 
         if (int_result.success) {
@@ -555,7 +571,7 @@ consume_jump_result consume_jump_literal(char *input) {
         int_result = consume_integer(current_input);
 
         if (int_result.success) {
-            current_input = int_result.next_input;
+            current_input = skip_whitespace(int_result.next_input);
             arrow_result = consume_left_double_arrow(current_input);
 
             if (arrow_result.success) {
