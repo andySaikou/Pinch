@@ -18,10 +18,18 @@ void append_char(char *s, char c) {
     *s = '\0';
 }
 
-// Repeatedly skip whitespace characters
+// Repeatedly skip whitespace characters and characters following a '#' comment
 char *skip_whitespace(char *input) {
-    while (*input == ' ' || *input == '\t' || *input == '\n' || *input == '\r') {
-        input++;
+    while (true) {
+        if (*input == ' ' || *input == '\t') {
+            input++;
+        } else if (*input == '#') {
+            while (*input != '\n' && *input != '\0') {
+                input++;
+            }
+        } else {
+            break;
+        }
     }
     return input;
 }

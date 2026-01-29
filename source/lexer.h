@@ -37,7 +37,7 @@ typedef struct {
 
 typedef struct {
     bool success;
-    char *consumed;
+    char *name;
     char *next_input;
 } consume_name_result;
 

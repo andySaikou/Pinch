@@ -79,11 +79,13 @@ Using the BNF syntax:
 
 <left_arrow> ::= '<-'
 <right_arrow> ::= '->'
-<left_pinch> ::= <factors> <right_arrow>
-<right_pinch> ::= <left_arrow> <factors>
+<left_pinch> ::= <factor> <right_arrow>
+<right_pinch> ::= <left_arrow> <factor>
+<left_pinchs> ::= <factors> <right_arrow>
+<right_pinchs> ::= <left_arrow> <factors>
 
-<pinch_func> ::= <left_pinch>? <func_name> <right_pinch>?
-<pinch_var> ::= <left_pinch> <var_name> | <var_name> <right_pinch> | <var_name>
+<pinch_func> ::= <left_pinchs>? <func_name> <right_pinchs>?
+<pinch_var> ::= <left_pinch> <var_name> | <var_name> <right_pinch>
 
 <statement> ::= ( <pinch_var> | <pinch_func> | <factor> ) '\eol'
 <program> ::= <statement>* '\eof'
@@ -94,7 +96,6 @@ Using the BNF syntax:
 - Pinch has three data types: Number, Text and the special Jump type. When operating with numbers, they behave like double with some degree of rounding applied to the output.
 - Pre-defined functions have expected number of arguements of expected types. Feeding a function with incorrect arguements will produce error. Refer to [functions](functions.md).
 - Some pre-defined functions return nothing. Assigning such a function result to a variable will produce error. Refer to [functions](functions.md).
-- Although it is syntactically correct to direct more than one factor at a variable at a time (using the `[a,b,...]` closure defined in `factors`), this does not comply with the semantics and will cause error.
 
 ## Interpreter constraints
 - Any `var_name`, `func_name`, `num_literal` or `jump_literal` can be at most 64 characters long.
