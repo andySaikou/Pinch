@@ -113,7 +113,17 @@ parse_factor_result parse_factor(char *input) {
         return (parse_factor_result){true, factor, paren_result.next_input};
     }
 
-    // Case 2: Number Literal
+    // Case 2: Jump Literal
+    consume_jump_result jump_res = consume_jump_literal(current_input);
+    if (jump_res.success) {
+        printf("Start parsing jump\n");
+        Factor *factor = create_factor(FACTOR_JUMP);
+        factor->data.jump.type = jump_res.type;
+        factor->data.jump.lines = jump_res.lines;
+        return (parse_factor_result){true, factor, jump_res.next_input};
+    }
+
+    // Case 3: Number Literal
     consume_num_result num_result = consume_num_literal(current_input);
     if (num_result.success) {
         Factor *factor = create_factor(FACTOR_NUM);
@@ -121,21 +131,12 @@ parse_factor_result parse_factor(char *input) {
         return (parse_factor_result){true, factor, num_result.next_input};
     }
 
-    // Case 3: String Literal
+    // Case 4: String Literal
     consume_name_result str_result = consume_str_literal(current_input);
     if (str_result.success) {
         Factor *factor = create_factor(FACTOR_STR);
         factor->data.str = str_result.name;
         return (parse_factor_result){true, factor, str_result.next_input};
-    }
-
-    // Case 4: Jump Literal
-    consume_jump_result jump_res = consume_jump_literal(current_input);
-    if (jump_res.success) {
-        Factor *factor = create_factor(FACTOR_JUMP);
-        factor->data.jump.type = jump_res.type;
-        factor->data.jump.lines = jump_res.lines;
-        return (parse_factor_result){true, factor, jump_res.next_input};
     }
 
     // Case 5: Variable Name
@@ -212,7 +213,7 @@ parse_factors_result parse_factors(char *input) {
         paren_result = consume_token(TOKEN_CLOSE_SQUARE_BRACKET, current_input);
 
         if (paren_result.success) {
-            return (parse_factors_result){true, factors, current_input};
+            return (parse_factors_result){true, factors, paren_result.next_input};
         } else {
             // No closing ']' found, return parse unsuccessful
             free_factors(factors);

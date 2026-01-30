@@ -98,5 +98,7 @@ typedef struct {
     char *next_input;
 } parse_statement_result;
 
+void free_statement(Statement *stmt);
+parse_statement_result parse_statement(char *input);
 
 #endif
