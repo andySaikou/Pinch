@@ -43,10 +43,12 @@ void free_factor(Factor *f) {
 // Helper to free up a Factors struct
 void free_factors(Factors *factors){
     if (factors != NULL) {
-        for(int i=0; i<factors->count; i++) {
-            xfree(factors -> items[i]);
+        if (factors->items != NULL) {
+            for(int i=0; i<factors->count; i++) {
+                xfree(factors -> items[i]);
+            }
+            xfree(factors->items);
         }
-        xfree(factors->items);
         xfree(factors);
     }
 }
@@ -116,7 +118,6 @@ parse_factor_result parse_factor(char *input) {
     // Case 2: Jump Literal
     consume_jump_result jump_res = consume_jump_literal(current_input);
     if (jump_res.success) {
-        printf("Start parsing jump\n");
         Factor *factor = create_factor(FACTOR_JUMP);
         factor->data.jump.type = jump_res.type;
         factor->data.jump.lines = jump_res.lines;
@@ -371,8 +372,7 @@ parse_pinch_var_result parse_pinch_var(char *input) {
                 return (parse_pinch_var_result){true, pinch_var, var_name_result.next_input};
             } else {
                 free_factors(left_pinch_result.factors);
-                fprintf(stderr, "Syntax Error: More than one value assigned to a variable.\n");
-                exit(EXIT_FAILURE); 
+                return (parse_pinch_var_result){false, NULL, input};
             }
         }
         // If var name successfully, and left pinch not parsed
@@ -388,8 +388,7 @@ parse_pinch_var_result parse_pinch_var(char *input) {
                     return (parse_pinch_var_result){true, pinch_var, right_pinch_result.next_input};
                 } else {
                     free_factors(right_pinch_result.factors);
-                    fprintf(stderr, "Syntax Error: More than one value assigned to a variable.\n");
-                    exit(EXIT_FAILURE); 
+                    return (parse_pinch_var_result){false, NULL, input};
                 }
             } else {
                 xfree(var_name_result.name);
