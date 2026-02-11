@@ -10,6 +10,7 @@ SRC_DIR = source
 OBJ_DIR = build
 OUT_DIR = output
 TEST_DIR = test
+WEB_DIR = docs
 OUT_TEST_DIR = output/test
 TEST_BIN_DIR = $(OUT_DIR)/test
 
@@ -49,6 +50,17 @@ test: $(TEST_BINS)
 	done
 	@echo "All tests completed."
 
+# WebAssembly compilation
+wasm: $(SRCS) | $(WEB_DIR)
+	@echo "Compiling to WebAssembly..."
+	emcc $(SRCS) -I$(SRC_DIR) -o $(WEB_DIR)/pinch.js \
+		-s WASM=1 \
+		-s EXPORTED_RUNTIME_METHODS='["ccall"]' \
+		-s EXPORTED_FUNCTIONS='["_main", "_run_web"]' \
+		-s NO_EXIT_RUNTIME=1 \
+		-O3
+	@echo "Web build complete! Files are in the $(WEB_DIR)/ directory."
+
 # Rule to compile a specific test executable
 # It links the test source ($<) with the shared objects ($(SHARED_OBJS))
 $(TEST_BIN_DIR)/%: $(TEST_DIR)/%.c $(SHARED_OBJS) | $(TEST_BIN_DIR)
@@ -63,6 +75,9 @@ $(OBJ_DIR):
 	mkdir -p $@
 
 $(OUT_DIR):
+	mkdir -p $@
+
+$(WEB_DIR):
 	mkdir -p $@
 
 # Optimisation for build deploy
@@ -80,4 +95,4 @@ clean:
 -include $(DEPS)
 
 # Phony targets (not actual files)
-.PHONY: all clean test deploy
+.PHONY: all clean test deploy wasm

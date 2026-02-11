@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinch Programming Language</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; background-color: #1e1e1e; color: #fff; }
+        header { background: #007acc; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.2rem;}
+        button { background: #28a745; color: white; border: none; padding: 8px 20px; font-size: 1rem; cursor: pointer; border-radius: 4px; font-weight: bold;}
+        button:hover { background: #218838; }
+        #container { display: flex; flex: 1; overflow: hidden; }
+        .pane { flex: 1; padding: 15px; font-family: "Courier New", Courier, monospace; font-size: 16px; box-sizing: border-box; overflow-y: auto; }
+        #editor { background: #1e1e1e; color: #d4d4d4; border: none; border-right: 2px solid #333; resize: none; outline: none; }
+        #output { background: #111; color: #4af626; margin: 0; white-space: pre-wrap; }
+        .error { color: #ff5555; }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <span>Pinch Playground</span>
+            <select id="example-select" style="padding: 5px; border-radius: 4px; background: #fff; color: #000;">
+                <option value="hello">Hello World</option>
+                <option value="maths">Maths</option>
+                <option value="hypotenuse">Hypotenuse</option>
+                <option value="fibonacci">Fibonacci Sequence</option>
+                <option value="keyword">String Keyword</option>
+            </select>
+        </div>
+        <button id="runBtn">Run Code ▶</button>
+    </header>
+    
+    <div id="container">
+        <textarea id="editor" class="pane" spellcheck="false">"Hello, World!"
+"Welcome to the Pinch Playground."</textarea>
+        <pre id="output" class="pane">Output will appear here...</pre>
+    </div>
+
+<script>
+        // Define example programs
+        const examples = {
+            "hello": `"Hello, World!"
+"Welcome to the Pinch Playground."`,
+            
+            "maths": `10 -> x
+5 -> y
+
+(x -> ADD <- y)
+(x -> MUL <- y)`,
+
+            "hypotenuse": `a <- 3
+b <- 4
+
+(a -> MUL <- a) -> sq_a
+(b -> MUL <- b) -> sq_b
+(sq_a -> ADD <- sq_b) -> sum
+(sum -> SQRT) -> result
+
+result  #output: 5`,
+            
+            "fibonacci": `0 -> a
+1 -> b
+10 -> count
+
+a   #output: 0, 1, 1, 2...
+(a -> ADD <- b) -> next
+
+b -> a
+next -> b
+(count -> SUB <- 1) -> count
+
+(count -> GT <- 0) -> check
+[check, 6<=, =>1] -> JUMP_IF`,
+
+            "keyword": `"Pinch Language" -> raw_input
+(raw_input -> UPPER) -> upper_input
+
+"LANGUAGE" -> keyword
+
+(upper_input -> CONTAINS <- keyword) -> is_found
+(is_found -> IF <- ["Keyword Detected", "Keyword Not Found"]) -> status_msg
+
+(status_msg -> CONCAT <- " in ") -> prefix
+(prefix -> CONCAT <- upper_input) -> final_report
+
+final_report    #output: "Keyword Detected in PINCH LANGUAGE"`
+        };
+
+        const editor = document.getElementById('editor');
+        const select = document.getElementById('example-select');
+
+        select.addEventListener('change', (e) => {
+            const selectedKey = e.target.value;
+            if (examples[selectedKey]) {
+                editor.value = examples[selectedKey];
+                // Optional: Clear the output window when they load a new script
+                document.getElementById('output').innerHTML = 'Ready to run...';
+            }
+        });
+
+        var Module = {
+            print: function(text) {
+                var out = document.getElementById('output');
+                out.innerHTML += text + "\n";
+            },
+            printErr: function(text) {
+                var out = document.getElementById('output');
+                out.innerHTML += "<span class='error'>" + text + "</span>\n";
+            }
+        };
+
+        document.getElementById('runBtn').addEventListener('click', () => {
+            document.getElementById('output').innerHTML = '';
+            const code = editor.value;
+            Module.ccall('run_web', null, ['string'], [code]);
+        });
+    </script>
+    
+    <script src="pinch.js"></script>
+</body>
+</html>

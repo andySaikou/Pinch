@@ -11,6 +11,10 @@
 #include "util.h"
 #include "list.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #define MAX_LINE_LENGTH 1024
 
 // DJB2 Hash Function for Strings
@@ -225,9 +229,95 @@ void run_file(const char *filepath) {
 }
 
 // ---------------------------------------------------------
+// Web Execution Mode (Emscripten Only)
+// ---------------------------------------------------------
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+void run_web(const char *source_code) {
+    MachineState *state = xalloc(sizeof(MachineState), "Alloc MachineState");
+    state->program_counter = 0;
+    state->variables = create_var_hashmap();
+    state->stmt_count = 0;
+    
+    int capacity = 64; 
+    state->statements = xalloc(capacity * sizeof(Statement*), "Alloc Statements");
+
+    bool syntax_error = false;
+    int physical_line = 1;
+    const char *current_pos = source_code;
+
+    while (*current_pos != '\0') {
+        const char *newline = strchr(current_pos, '\n');
+        int len = newline ? (newline - current_pos) : (int)strlen(current_pos);
+        
+        char *line_buf = xalloc(len + 2, "Alloc line buffer");
+        strncpy(line_buf, current_pos, len);
+        line_buf[len] = '\n';
+        line_buf[len + 1] = '\0';
+
+        bool is_empty = true;
+        for (int i = 0; i < len; i++) {
+            if (line_buf[i] != ' ' && line_buf[i] != '\t' && line_buf[i] != '\r' && line_buf[i] != '\n') {
+                is_empty = false;
+                break;
+            }
+        }
+
+        if (!is_empty) {
+            parse_statement_result res = parse_statement(line_buf);
+            
+            if (res.success) {
+                if (state->stmt_count >= capacity) {
+                    capacity *= 2;
+                    Statement **new_stmts = xalloc(capacity * sizeof(Statement*), "Resize stmts");
+                    for (int i = 0; i < state->stmt_count; i++) new_stmts[i] = state->statements[i];
+                    xfree(state->statements);
+                    state->statements = new_stmts;
+                }
+                state->statements[state->stmt_count++] = res.stmt;
+            } else {
+                fprintf(stderr, "Syntax Error on line %d.\n", physical_line);
+                syntax_error = true;
+                xfree(line_buf);
+                break; 
+            }
+        }
+        
+        xfree(line_buf);
+        if (!newline) break; 
+        current_pos = newline + 1;
+        physical_line++;
+    }
+
+    if (syntax_error) {
+        free_state(state);
+        return; // Return instead of exit() so the web tab stays alive
+    }
+
+    // Execution Loop
+    while (state->program_counter >= 0 && state->program_counter < state->stmt_count) {
+        Statement *current_stmt = state->statements[state->program_counter];
+        bool success = interpret_line(current_stmt, state, false);
+        
+        if (!success) {
+            fprintf(stderr, "Execution halted at statement %d.\n", state->program_counter + 1);
+            break; 
+        }
+        state->program_counter++;
+    }
+
+    free_state(state);
+}
+#endif
+
+// ---------------------------------------------------------
 // Main Entry
 // ---------------------------------------------------------
 int main(int argc, char **argv) {
+
+#ifdef __EMSCRIPTEN__
+    return EXIT_SUCCESS;
+#else
     if (argc == 1) {
         run_repl();
     } else if (argc == 2) {
@@ -237,4 +327,6 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
+#endif
+
 }
