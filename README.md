@@ -37,7 +37,7 @@ next -> b
 Take a input string, check for a specific keyword, and output a status message:
 ```
 "Pinch Language" -> raw_input
-raw_input -> UPPER -> upper_input
+(raw_input -> UPPER) -> upper_input
 
 "LANGUAGE" -> keyword
 

@@ -10,6 +10,7 @@ SRC_DIR = source
 OBJ_DIR = build
 OUT_DIR = output
 TEST_DIR = test
+OUT_TEST_DIR = output/test
 TEST_BIN_DIR = $(OUT_DIR)/test
 
 # Target executable
@@ -64,13 +65,19 @@ $(OBJ_DIR):
 $(OUT_DIR):
 	mkdir -p $@
 
+# Optimisation for build deploy
+deploy:
+	$(MAKE) clean
+	$(MAKE) all CFLAGS="-Wall -Wextra -O3 -MMD -MP -I$(SRC_DIR)"
+
 # Clean build artifacts
 clean:
 	rm -rf $(OBJ_DIR)
+	rm -rf $(OUT_TEST_DIR)
 	rm -f $(TARGET)
 
 # Include the dependency files
 -include $(DEPS)
 
 # Phony targets (not actual files)
-.PHONY: all clean
+.PHONY: all clean test deploy

@@ -14,7 +14,7 @@ struct hashmap *hashmap_new(int initial_buckets, int bucket_capacity,
     result->hashfun = hashfun;
     struct list *buckets = list_new(initial_buckets);
     for (int i = 0; i < initial_buckets; i++) {
-        list_set(buckets, i, list_new(bucket_capacity));
+        list_append(buckets, list_new(bucket_capacity));
     }
     result->buckets = buckets;
     return result;

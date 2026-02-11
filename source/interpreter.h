@@ -41,6 +41,7 @@ Value* value_from_num(double num);
 Value* value_from_str(char *s);
 Value* value_from_jump(int lines, jump_type type);
 Value* copy_value(Value *v);
+void free_value(Value *v);
 
 bool interpret_line(Statement *line, MachineState *state, bool interactive);
 

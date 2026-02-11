@@ -82,9 +82,28 @@ void free_value(Value *v) {
 
 void print_value(Value *value) {
     switch (value->type) {
-        case VALUE_NUM:
-            printf("%f\n", value->data.num);
+        case VALUE_NUM: {
+            // For Number, round to 5 s.f. and trim trailing 0s
+            char buf[64];
+            snprintf(buf, sizeof(buf), "%.5f", value->data.num);
+            
+            // Attempt to trim if there is a decimal point
+            if (strchr(buf, '.')) {
+                char *ptr = buf + strlen(buf) - 1;
+                // Replace trailing '0's with null terminators
+                while (*ptr == '0') {
+                    *ptr = '\0';
+                    ptr--;
+                }
+                // Replace decimal point if no more zeros
+                if (*ptr == '.') {
+                    *ptr = '\0';
+                }
+            }
+            
+            printf("%s\n", buf);
             break;
+        }
         case VALUE_STR:
             printf("%s\n", value->data.str);
             break;
@@ -192,7 +211,7 @@ Value* evaluate_function(Pinch_Func *func, MachineState *state) {
         }
     }
     else {
-        fprintf(stderr, "Runtime Error: Unknown function '%s'\n", name);
+        fprintf(stderr, "Runtime Error: Unknown function '%s'.\n", name);
         result = value_from_error();
     }
 
@@ -219,7 +238,7 @@ Value* evaluate_factor(Factor *factor, MachineState *state) {
             // Hashmap lookup
             Value *val = (Value*)hashmap_lookup(state->variables, factor->data.var);
             if (val == NULL) {
-                fprintf(stderr, "Runtime Error: Undefined variable '%s'\n", factor->data.var);
+                fprintf(stderr, "Runtime Error: Undefined variable '%s'.\n", factor->data.var);
                 return value_from_error();
             }
             return copy_value(val); 
@@ -257,14 +276,21 @@ bool interpret_variable(Pinch_Var *var_assign, MachineState *state) {
 
     // If variable exists, delete old value first
     Value *old_value = (Value*)hashmap_lookup(state->variables, var_assign->name);
-    if (old_value) {
-        hashmap_delete(state->variables, var_assign->name);
-        free_value(old_value);
+
+    if (old_value) {        
+        // Free any dynamically allocated inner data from the old value
+        if (old_value->type == VALUE_STR) {
+            xfree(old_value->data.str);
+        }
+        *old_value = *result;
+        xfree(result);
+    } 
+    else {
+        // Insert new entry if not exist
+        char *key = xalloc(strlen(var_assign->name) + 1, "Interpreter Error: Fail to allocate memory.\n");
+        strcpy(key, var_assign->name);
+        hashmap_insert(state->variables, key, result);
     }
-    // Insert new hashmap entry
-    char *key = xalloc(strlen(var_assign->name) + 1, "Interpreter Error: Fail to allocate memory.\n");
-    strcpy(key, var_assign->name);
-    hashmap_insert(state->variables, key, result);
     return true;
 }
 

@@ -45,7 +45,7 @@ void free_factors(Factors *factors){
     if (factors != NULL) {
         if (factors->items != NULL) {
             for(int i=0; i<factors->count; i++) {
-                xfree(factors -> items[i]);
+                free_factor(factors->items[i]);
             }
             xfree(factors->items);
         }
@@ -58,6 +58,7 @@ void free_pinch_func(Pinch_Func *pinch_func) {
     if (pinch_func != NULL) {
         xfree(pinch_func->name);
         free_factors(pinch_func->factors);
+        xfree(pinch_func);
     }
 }
 
@@ -66,6 +67,7 @@ void free_pinch_var(Pinch_Var *pinch_var) {
     if (pinch_var != NULL) {
         xfree(pinch_var->name);
         free_factors(pinch_var->factors);
+        xfree(pinch_var);
     }
 }
 

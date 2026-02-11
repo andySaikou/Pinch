@@ -1,0 +1,12 @@
+"Pinch Language" -> raw_input
+(raw_input -> UPPER) -> upper_input
+
+"LANGUAGE" -> keyword
+
+(upper_input -> CONTAINS <- keyword) -> is_found
+(is_found -> IF <- ["Keyword Detected", "Keyword Not Found"]) -> status_msg
+
+(status_msg -> CONCAT <- " in ") -> prefix
+(prefix -> CONCAT <- upper_input) -> final_report
+
+final_report    #output: "Keyword Detected in PINCH LANGUAGE"

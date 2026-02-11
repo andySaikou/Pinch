@@ -54,3 +54,12 @@ void list_prepend(struct list *xs, void *x) {
     xs->elems[0] = x;
     xs->length++;
 }
+
+void free_list(struct list *xs) {
+    if (xs != NULL) {
+        if (xs->elems != NULL) {
+            xfree(xs->elems);
+        }
+        xfree(xs);
+    }
+}

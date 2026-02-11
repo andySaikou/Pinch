@@ -15,7 +15,7 @@
 // Helper to create error value and print error message
 Value* create_type_error(char *func_name, char *expected, ValueType actual) {
     Value *v = value_from_error();
-    fprintf(stderr, "Runtime Error [%s]: Expected %s, got type %d.\n", func_name, expected, actual);
+    fprintf(stderr, "Runtime Error: Function %s expected %s, got type %d.\n", func_name, expected, actual);
     return v;
 }
 
@@ -23,7 +23,7 @@ Value* create_type_error(char *func_name, char *expected, ValueType actual) {
 Value* validate_args(char *func_name, Value **args, int actual_count, int expected_count, ...) {
     // 1. Check Argument Count
     if (actual_count != expected_count) {
-        fprintf(stderr, "Runtime Error [%s]: Expected %d arguments, got %d.\n", 
+        fprintf(stderr, "Runtime Error: Function %s expected %d arguments, got %d.\n", 
                 func_name, expected_count, actual_count);
         return value_from_error();
     }

@@ -289,7 +289,7 @@ consume_name_result consume_str_literal(char *input) {
                         "length of %d characters.\n",
                         STRING_BUFFER_LENGTH);
                 xfree(str_buffer);
-                exit(EXIT_FAILURE);
+                return (consume_name_result) {false, NULL, input};
             }
 
             // If successful, add to buffer
@@ -312,7 +312,7 @@ consume_name_result consume_str_literal(char *input) {
                 "Syntax Error: Unclosed quotation for string literal %s.\n",
                 str_buffer);
         xfree(str_buffer);
-        exit(EXIT_FAILURE);
+        return (consume_name_result) {false, NULL, input};
     }
 
     return (consume_name_result){true, str_buffer, current_input};

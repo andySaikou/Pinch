@@ -1,0 +1,13 @@
+0 -> a
+1 -> b
+10 -> count
+
+a   #output: 0, 1, 1, 2...
+(a -> ADD <- b) -> next
+
+b -> a
+next -> b
+(count -> SUB <- 1) -> count
+
+(count -> GT <- 0) -> check
+[check, 6<=, =>1] -> JUMP_IF
