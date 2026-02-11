@@ -3,6 +3,7 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
+#include <string.h>
 #include "list.h"
 
 typedef int (*hashfun)(const void *);

@@ -1,13 +1,12 @@
 // In-built Library Functions
 
-#include "functions.h"
-
-// functions.c
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <unistd.h>
 #include "functions.h"
 #include "util.h" 
 
@@ -352,4 +351,30 @@ Value* STR_EQ(Value **args, int count) {
     } else {
         return value_from_num(0.0);
     }
+}
+
+// ---------------------------------------------------------
+// SPECIAL FUNCTIONS
+// ---------------------------------------------------------
+
+// IF:: [Number, Type_A, Type_A] -> Type_A
+Value* IF(Value **args, int count) {
+    Value *err = validate_args("IF", args, count, 3, VALUE_NUM, VALUE_ANY, VALUE_ANY);
+    if (err) return err;
+
+    if (args[0]->data.num >= 0.5) {
+        return copy_value(args[1]);
+    } else {
+        return copy_value(args[2]);
+    }
+}
+
+// SLEEP :: Number -> []
+Value* SLEEP(Value **args, int count) {
+    Value *err = validate_args("SLEEP", args, count, 1, VALUE_NUM);
+    if (err) return err;
+
+    unsigned int seconds = (unsigned int)args[0]->data.num;
+    sleep(seconds);
+    return value_from_none();
 }

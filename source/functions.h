@@ -4,6 +4,7 @@
 #define FUNCTIONS_H
 
 #include "interpreter.h"
+#include "util.h"
 
 Value* ADD(Value **args, int count);
 Value* SUB(Value **args, int count);
@@ -32,5 +33,8 @@ Value* SUBSTR(Value **args, int count);
 Value* CONTAINS(Value **args, int count);
 Value* FIND(Value **args, int count);
 Value* STR_EQ(Value **args, int count);
+
+Value* IF(Value **args, int count);
+Value* SLEEP(Value **args, int count);
 
 #endif

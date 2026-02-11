@@ -101,7 +101,7 @@ Returns 1 if two strings are identical, otherwise returns 0.
 `IF:: [Number, Type_A, Type_A] -> Type_A`
 Type_A can be Number, Text or Jump. Returns the first parameter of Type_A if the number is greater than 0.5, otherwise returns the second parameter of Type_A.
 
-`JUMP_IF:: Jump -> []`
+`JUMP:: Jump -> []`
 Unconditionally perform the jump given by the parameter. Note: Jump is either `n<=` or `=>m`. `n<=` denotes a backward jump of n lines relative to the current line, and `=>m` denotes a forward jump of m lines relative to the current line.
 
 `JUMP_IF:: [Number, Jump, Jump] -> []`

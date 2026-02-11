@@ -67,7 +67,7 @@ static struct pair *hashmap_find(struct hashmap *kvs, void *k) {
     struct list *bucket = list_get(kvs->buckets, hash % kvs->bucket_size);
     for (int i = 0; i < bucket->length; i++) {
         struct pair *kv = list_get(bucket, i);
-        if (kv->k == k) {
+        if (strcmp((char*)kv->k, (char*)k) == 0) {
             return kv;
         }
     }
