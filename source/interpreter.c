@@ -177,7 +177,7 @@ Value* evaluate_function(Pinch_Func *func, MachineState *state) {
     // JUMP:: Jump -> []
     else if (strcmp(name, "JUMP") == 0) {
         if (count != 1 || args[0]->type != VALUE_JUMP) {
-            fprintf(stderr, "Runtime Error: JUMP expects 1 Jump argument.\n");
+            fprintf(stderr, "Runtime Error: JUMP expects 1 argument Jump.\n");
             result = value_from_error();
         } else {
             int lines = args[0]->data.jump.lines;
@@ -194,19 +194,29 @@ Value* evaluate_function(Pinch_Func *func, MachineState *state) {
     // JUMP_IF:: [Number, Jump, Jump] -> []
     else if (strcmp(name, "JUMP_IF") == 0) {
         if (count != 3 || args[0]->type != VALUE_NUM || args[1]->type != VALUE_JUMP) {
-            fprintf(stderr, "Runtime Error: JUMP_IF expects [Number, Jump].\n");
+            fprintf(stderr, "Runtime Error: JUMP_IF expects 3 arguments [Number, Jump, Jump].\n");
             result = value_from_error();
         } else {
+            int lines;
+            jump_type type;
+
+            // Determine which jump to perform
             if (args[0]->data.num >= 0.5) {
-                int lines = args[1]->data.jump.lines;
-                if (args[1]->data.jump.type == JUMP_FORWARD) {
-                    state->program_counter += lines;
-                } else {
-                    state->program_counter -= lines;
-                }
-                // Offset upcoming program_counter increment in the main loop
-                state->program_counter--;
+                lines = args[1]->data.jump.lines;
+                type = args[1]->data.jump.type;
+            } else {
+                lines = args[2]->data.jump.lines;
+                type = args[2]->data.jump.type;
             }
+
+            // Modify program_counter
+            if (type == JUMP_FORWARD) {
+                state->program_counter += lines;
+            } else {
+                state->program_counter -= lines;
+            }
+            // Offset upcoming program_counter increment in the main loop
+            state->program_counter--;
             result = value_from_none();
         }
     }
@@ -271,6 +281,13 @@ bool interpret_variable(Pinch_Var *var_assign, MachineState *state) {
     // If evaluation failed, free and return unsuccessful
     if (result->type == VALUE_ERROR) {
         free_value(result);
+        return false;
+    } 
+
+    // If evaluation return none value
+    if (result->type == VALUE_NONE) {
+        free_value(result);
+        fprintf(stderr, "Runtime Error: Assigning none value to variable '%s'.\n", var_assign->name);
         return false;
     } 
 

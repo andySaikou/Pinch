@@ -1,6 +1,6 @@
 # Pinch
 
-Pinch is a simple language based solely on dataflow that is represented by arrows. This repository will be an interpreter written in C that interpretes Pinch.
+Pinch is a simple language based solely on dataflow that is represented by arrows. This repository is an interpreter for the Pinch language, written in C. [Web Pinch Playground](http://andysaikou.github.io/Pinch/) via WebAssembly is also avaiable for easy access.
 
 ## Example programs
 
@@ -93,7 +93,7 @@ Using the BNF syntax:
 
 
 ## Semantics
-- Pinch has three data types: Number, Text and the special Jump type. When operating with numbers, they behave like double with some degree of rounding applied to the output.
+- Pinch has three data types: Number, Text and the special Jump type. When operating with numbers, they behave the same way as double.
 - Pre-defined functions have expected number of arguements of expected types. Feeding a function with incorrect arguements will produce error. Refer to [functions](functions.md).
 - Some pre-defined functions return nothing. Assigning such a function result to a variable will produce error. Refer to [functions](functions.md).
 

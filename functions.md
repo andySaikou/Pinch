@@ -102,10 +102,10 @@ Returns 1 if two strings are identical, otherwise returns 0.
 Type_A can be Number, Text or Jump. Returns the first parameter of Type_A if the number is greater than 0.5, otherwise returns the second parameter of Type_A.
 
 `JUMP:: Jump -> []`
-Unconditionally perform the jump given by the parameter. Note: Jump is either `n<=` or `=>m`. `n<=` denotes a backward jump of n lines relative to the current line, and `=>m` denotes a forward jump of m lines relative to the current line.
+Unconditionally perform the jump given by the parameter. Note: Jump is either `n<=` or `=>m`. `n<=` denotes a backward jump of n lines relative to the current line, and `=>m` denotes a forward jump of m lines relative to the current line. A jump beyond the program space (before the first line or after the last line) will simply cause the program to terminate.
 
 `JUMP_IF:: [Number, Jump, Jump] -> []`
-Perform the first Jump if the number is greater than 0.5, otherwise perform the second Jump.
+Perform the first Jump if the number is greater than 0.5, otherwise perform the second Jump. Also refer to note on the function `JUMP`.
 
 `SLEEP :: Number -> []`
 Sleep for a number of seconds given by the parameter.

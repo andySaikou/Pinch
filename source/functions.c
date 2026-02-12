@@ -13,9 +13,10 @@
 // functions.c
 
 // Helper to create error value and print error message
-Value* create_type_error(char *func_name, char *expected, ValueType actual) {
+Value* create_type_error(char *func_name, char *expected, char *actual) {
     Value *v = value_from_error();
-    fprintf(stderr, "Runtime Error: Function %s expected %s, got type %d.\n", func_name, expected, actual);
+    
+    fprintf(stderr, "Runtime Error: Function %s expected %s, got type %s.\n", func_name, expected, actual);
     return v;
 }
 
@@ -48,8 +49,16 @@ Value* validate_args(char *func_name, Value **args, int actual_count, int expect
                 case VALUE_JUMP: expect_str = "Jump"; break;
                 default:         expect_str = "Unknown"; break;
             }
+
+            char *actual_str;
+            switch (args[i]->type) {
+                case VALUE_NUM:  actual_str = "Number"; break;
+                case VALUE_STR:  actual_str = "String"; break;
+                case VALUE_JUMP: actual_str = "Jump"; break;
+                default:         actual_str = "Unknown"; break;
+            }
             
-            return create_type_error(func_name, expect_str, args[i]->type);
+            return create_type_error(func_name, expect_str, actual_str);
         }
     }
 
