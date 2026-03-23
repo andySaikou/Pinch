@@ -383,7 +383,9 @@ Value* SLEEP(Value **args, int count) {
     Value *err = validate_args("SLEEP", args, count, 1, VALUE_NUM);
     if (err) return err;
 
-    unsigned int seconds = (unsigned int)args[0]->data.num;
-    sleep(seconds);
+    double seconds = args[0]->data.num;
+    useconds_t usec = (useconds_t)(seconds * 1000000);
+    usleep(usec);
+
     return value_from_none();
 }

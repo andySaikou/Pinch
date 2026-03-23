@@ -1,0 +1,18 @@
+star <- "*" 
+str_a <- "         "
+str_b <- "         "
+count <- 10
+
+(str_a -> CONCAT <- star) -> str_a 
+(str_a -> CONCAT <- str_b)
+(star -> CONCAT <- str_b) -> str_b 
+(str_a -> SUBSTR <- [1, 10]) -> str_a
+(str_b -> SUBSTR <- [0, 10]) -> str_b
+(count -> SUB <- 1) -> count
+
+JUMP_IF <- [(count -> GT <- 0), 6<=, =>1]
+
+count <- 2
+"        |||        "
+(count -> SUB <- 1) -> count
+JUMP_IF <- [(count -> GT <- 0), 2<=, =>1]

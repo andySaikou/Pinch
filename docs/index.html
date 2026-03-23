@@ -22,9 +22,11 @@
             <span>Pinch Playground</span>
             <select id="example-select" style="padding: 5px; border-radius: 4px; background: #fff; color: #000;">
                 <option value="hello">Hello World</option>
+                <option value="tree">Christmas Tree</option>
                 <option value="maths">Maths</option>
                 <option value="hypotenuse">Hypotenuse</option>
                 <option value="fibonacci">Fibonacci Sequence</option>
+                <option value="primes">Prime Numbers</option>
                 <option value="keyword">String Keyword</option>
             </select>
         </div>
@@ -49,6 +51,25 @@
         const examples = {
             "hello": `"Hello, World!"
 "Welcome to the Pinch Playground."`,
+
+            "tree": `star <- "*" 
+str_a <- "         "
+str_b <- "         "
+count <- 10
+
+(str_a -> CONCAT <- star) -> str_a 
+(str_a -> CONCAT <- str_b)
+(star -> CONCAT <- str_b) -> str_b 
+(str_a -> SUBSTR <- [1, 10]) -> str_a
+(str_b -> SUBSTR <- [0, 10]) -> str_b
+(count -> SUB <- 1) -> count
+
+JUMP_IF <- [(count -> GT <- 0), 6<=, =>1]
+
+count <- 2
+"        |||        "
+(count -> SUB <- 1) -> count
+JUMP_IF <- [(count -> GT <- 0), 2<=, =>1]`,
             
             "maths": `10 -> x
 5 -> y
@@ -79,6 +100,27 @@ next -> b
 
 (count -> GT <- 0) -> check
 [check, 6<=, =>1] -> JUMP_IF`,
+
+            "primes": `x <- 2
+limit <- 100
+count <- 0
+
+((x -> SQRT) -> FLOOR) -> sqrt_x
+divisor <- 2
+JUMP_IF <- [(divisor -> GT <- sqrt_x), =>5, =>1]
+(x -> MOD <- divisor) -> remainder
+JUMP_IF <- [(remainder -> EQ <- 0), =>5, =>1]
+(divisor -> ADD <- 1) -> divisor
+JUMP <- 4<=
+
+x
+(count -> ADD <- 1) -> count
+(x -> ADD <- 1) -> x
+JUMP_IF <- [(x -> LTE <- limit), 10<=, =>1]
+
+""
+"Number of prime numbers within 100:"
+count`,
 
             "keyword": `"Pinch Language" -> raw_input
 (raw_input -> UPPER) -> upper_input

@@ -1,0 +1,20 @@
+x <- 2
+limit <- 100
+count <- 0
+
+((x -> SQRT) -> FLOOR) -> sqrt_x
+divisor <- 2
+JUMP_IF <- [(divisor -> GT <- sqrt_x), =>5, =>1]
+(x -> MOD <- divisor) -> remainder
+JUMP_IF <- [(remainder -> EQ <- 0), =>5, =>1]
+(divisor -> ADD <- 1) -> divisor
+JUMP <- 4<=
+
+x
+(count -> ADD <- 1) -> count
+(x -> ADD <- 1) -> x
+JUMP_IF <- [(x -> LTE <- limit), 10<=, =>1]
+
+""
+"Number of prime numbers within 100:"
+count
